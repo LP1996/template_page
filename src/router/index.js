@@ -4,7 +4,16 @@ import VueRouter from 'vue-router'
 const routes = [
   {
     path: '/',
-    redirect: '/login'
+    redirect: '/login',
+    component: () => import('../layout/Index.vue'),
+    children: [
+      {
+        path: 'type'
+      },
+      {
+        path: 'resource'
+      }
+    ]
   },
   {
     path: '/login',
