@@ -1,0 +1,11 @@
+.height100 {
+  height: 100%;
+}
+
+.padding10 {
+  padding: 10px;
+}
+
+.el-scrollbar__wrap {
+  overflow-x: hidden;
+}

@@ -1,6 +1,6 @@
 <template>
   <article class="layout">
-    <nav>
+    <nav ref="nav">
       <span class="logo">
         <img src="../assets/logo.png" alt="logo">
       </span>
@@ -20,7 +20,9 @@
       </el-dropdown>
     </nav>
 
-    <router-view></router-view>
+    <article class="layout__main" :style="mainHeightStyle">
+      <router-view></router-view>
+    </article>
   </article>
 </template>
 
@@ -29,13 +31,24 @@ export default {
   name: 'Layout',
   data() {
     return {
-      defaultRoute: '/type'
+      defaultRoute: '/type',
+      navHeight: 0
     }
   },
   computed: {
     name() {
       return localStorage.getItem('name')
+    },
+    mainHeightStyle() {
+      if (!this.navHeight) {
+        return {}
+      }
+
+      return { height: `calc(100% - ${this.navHeight}px)` }
     }
+  },
+  mounted() {
+    this.navHeight = this.$refs.nav.offsetHeight
   },
   methods: {
     handleCommand(command) {
@@ -55,7 +68,6 @@ export default {
 
 .layout {
   height: 100%;
-  user-select: none;
 }
 
 .layout > nav {
@@ -64,6 +76,7 @@ export default {
   align-items: center;
   border: 1px solid #eee;
   padding: 0 20px 0 0;
+  user-select: none;
 }
 
 nav > .logo {
@@ -87,5 +100,9 @@ nav > .el-menu {
 
 .el-dropdown-link {
   cursor: pointer;
+}
+
+.layout__main {
+  overflow: auto;
 }
 </style>

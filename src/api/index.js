@@ -44,7 +44,6 @@ export const getResourceVersion = (type, name) => {
 }
 
 export const downResource = (type, name, version) => {
-  
   // version 可选
   return downRequest(RESOURCE_URLS.down, { type, name, version })
 }

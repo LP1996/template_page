@@ -54,5 +54,6 @@ export default {
 .login-wrapper {
   width: 400px;
   margin: 200px auto;
+  text-align: center;
 }
 </style>

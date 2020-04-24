@@ -8,7 +8,9 @@ const routes = [
     component: () => import('../layout/Index.vue'),
     children: [
       {
-        path: 'type'
+        path: 'type',
+        name: 'type',
+        component: () => import('../views/Type/Index.vue')
       },
       {
         path: 'resource'
