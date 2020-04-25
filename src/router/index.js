@@ -13,7 +13,9 @@ const routes = [
         component: () => import('../views/Type/Index.vue')
       },
       {
-        path: 'resource'
+        path: 'resource',
+        name: 'resource',
+        component: () => import('../views/Resource/Index.vue')
       }
     ]
   },

@@ -31,7 +31,6 @@ export default {
   name: 'Layout',
   data() {
     return {
-      defaultRoute: '/type',
       navHeight: 0
     }
   },
@@ -45,6 +44,11 @@ export default {
       }
 
       return { height: `calc(100% - ${this.navHeight}px)` }
+    },
+    defaultRoute() {
+      const { path } = this.$route
+
+      return path
     }
   },
   mounted() {

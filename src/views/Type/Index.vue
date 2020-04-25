@@ -147,7 +147,6 @@ export default {
     getAllTypes() {
       this.loading = true
       getAllTypes().then(types => {
-        console.log(types)
         this.tableData = types
       }).finally(() => (this.loading = false))
     },

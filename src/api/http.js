@@ -61,6 +61,7 @@ export const downRequest = (url, params) => {
     method: 'get',
     url,
     params,
-    paramsSerializer: qs.stringify
+    paramsSerializer: qs.stringify,
+    responseType: 'blob'
   })
 }
