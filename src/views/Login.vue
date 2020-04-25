@@ -2,7 +2,7 @@
   <article class="login">
     <el-card class="login-wrapper" :body-style="{ 'padding-top': 0 }">
       <h2>登录</h2>
-      <el-form ref="form" class="login-form" :model="form" :rules="formRules">
+      <el-form ref="form" class="login-form" :model="form" :rules="formRules" @submit.native.prevent>
         <el-form-item prop="name">
           <el-input v-model="form.name" placeholder="请输入你的名字" />
         </el-form-item>

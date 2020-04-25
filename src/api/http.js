@@ -22,7 +22,10 @@ instance.interceptors.response.use(
     
     return data
   },
-  err => Message.error(err.message)
+  err => {
+    Message.error(err.message)
+    return Promise.reject(err)
+  }
 )
 
 export const getRequest = (url, params) => {

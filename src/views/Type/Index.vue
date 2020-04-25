@@ -1,7 +1,7 @@
 <template>
   <el-scrollbar class="height100">
     <article class="padding10">
-      <el-table :data="tableData">
+      <el-table v-loading="loading" :data="tableData">
         <el-table-column prop="name" label="类型名" align="center" />
         <el-table-column prop="description" label="类型描述" align="center" />
         <el-table-column label="操作" align="center">
@@ -15,7 +15,7 @@
       <el-dialog :visible.sync="addDialogVisible" title="新增类型" @close="resetForms">
         <el-input v-model="addForm.name" placeholder="请输入新的类型名称" />
         <template v-slot:footer>
-          <el-button type="primary" @click="submitAdd">确定</el-button>
+          <el-button :loading="addLoading" type="primary" @click="submitAdd">确定</el-button>
           <el-button @click="hideAddDialog">取消</el-button>
         </template>
       </el-dialog>
@@ -23,18 +23,20 @@
       <el-dialog :visible.sync="updateDialogVisible" title="修改类型名称" @close="resetForms">
         <el-input v-model="updateForm.newName" placeholder="请输入新的类型名称" />
         <template v-slot:footer>
-          <el-button type="primary" @click="submitUpdate">确定</el-button>
+          <el-button :loading="updateLoading" type="primary" @click="submitUpdate">确定</el-button>
           <el-button @click="hideUpdateDialog">取消</el-button>
         </template>
       </el-dialog>
 
       <el-dialog :visible.sync="deleteDialogVisible" title="删除类型">
         <span>
-          <span class="delete-warn">警告:</span> 删除类型是很危险的行为，会导致该类型下的所有资源文件全部被删除，如果确定需要删除，请在下方输入框输入<b>当前类型的名称</b>
+          <span class="delete-warn">警告:</span> 
+          删除类型是很危险的行为，会导致该类型下的所有资源文件全部被删除，如果确定需要删除，请在下方输入框输入当前类型的名称:
+          <b>{{ wantToDeleteType ? wantToDeleteType.name : '' }}</b>
         </span>
         <el-input v-model="inputWantToDeleteTypeName" placeholder="输入要删除的类型名称" />
         <template v-slot:footer>
-          <el-button type="danger" @click="submitUpdate">确定</el-button>
+          <el-button :loading="deleteLoading" type="danger" @click="submitDelete">确定</el-button>
           <el-button @click="hideDeleteDialog">取消</el-button>
         </template>
       </el-dialog>
@@ -49,6 +51,11 @@ export default {
   name: 'Type',
   data() {
     return {
+      loading: true,
+      addLoading: false,
+      updateLoading: false,
+      deleteLoading: false,
+
       tableData: [],
       updateForm: {
         oldName: '',
@@ -108,6 +115,16 @@ export default {
       this.addDialogVisible = false
     },
 
+    submitDelete() {
+      const { wantToDeleteType: { name }, inputWantToDeleteTypeName } = this
+
+      if (name !== inputWantToDeleteTypeName) {
+        this.$message.warning('输入名称不一致，请检查')
+        return
+      }
+
+      this.deleteType(name)
+    },
     showDeleteDialog(type) {
       this.wantToDeleteType = type
       this.deleteDialogVisible = true
@@ -128,21 +145,33 @@ export default {
       this.addForm = { name: '' }
     },
     getAllTypes() {
+      this.loading = true
       getAllTypes().then(types => {
+        console.log(types)
         this.tableData = types
-      })
+      }).finally(() => (this.loading = false))
     },
     addType(name) {
+      this.addLoading = true
       addType(name).then(() => {
         this.getAllTypes()
         this.$message.success('添加成功')
-      })
+      }).finally(() => (this.addLoading = false))
     },
     updateTypeName(oldName, newName) {
+      this.updateLoading = true
       updateType(oldName, newName).then(() => {
         this.getAllTypes()
         this.$message.success('修改成功')
-      })
+      }).finally(() => (this.updateLoading = false))
+    },
+    deleteType(name) {
+      this.deleteLoading = true
+      deleteType(name).then(() => {
+        this.$message.success('删除成功')
+        this.hideDeleteDialog()
+        this.getAllTypes()
+      }).finally(() => (this.deleteLoading = false))
     }
   }
 }
