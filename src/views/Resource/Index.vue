@@ -14,9 +14,9 @@
         <el-table-column label="操作" align="center" >
           <template v-slot="{ row }">
             <el-button type="text" size="mini" @click="downResource(row.name)">下载</el-button>
-            <el-button type="text" size="mini">更新名称</el-button>
+            <el-button type="text" size="mini" @click="showUploadDialog(row.name)">更新</el-button>
             <el-button type="text" size="mini">查看版本</el-button>
-            <el-button type="text" size="mini">删除</el-button>
+            <el-button type="text" size="mini" @click="handleDelete(row.name)">删除</el-button>
           </template>
         </el-table-column>
       </el-table>
@@ -31,7 +31,7 @@
           <el-input v-model="addForm.description" placeholder="请输入资源描述" />
         </el-form-item>
         <el-form-item label="文件" required>
-          <el-upload ref="upload" action="" :limit="1" accept=".zip" :auto-upload="false">
+          <el-upload ref="addUpload" action="" :limit="1" accept=".zip" :auto-upload="false">
             <el-button size="small" type="primary">选择文件</el-button>
             <div slot="tip" class="el-upload__tip">只能上传 zip 文件</div>
           </el-upload>
@@ -39,8 +39,27 @@
       </el-form>
 
       <template v-slot:footer>
-        <el-button type="primary" @click="submitAdd">确定</el-button>
+        <el-button :loading="addLoading" type="primary" @click="submitAdd">确定</el-button>
         <el-button @click="hideAddDialog">取消</el-button>
+      </template>
+    </el-dialog>
+
+    <el-dialog :visible.sync="updateDialogVisible" title="更新资源" @close="resetUpdateForm">
+      <el-form ref="updateForm" :model="updateForm" :rules="updateFormRules">
+        <el-form-item prop="description" label="更新描述">
+          <el-input v-model="updateForm.description" placeholder="请输入更新描述" />
+        </el-form-item>
+        <el-form-item label="文件" required>
+          <el-upload ref="updateUpload" action="" :limit="1" accept=".zip" :auto-upload="false">
+            <el-button size="small" type="primary">选择文件</el-button>
+            <div slot="tip" class="el-upload__tip">只能上传 zip 文件</div>
+          </el-upload>
+        </el-form-item>
+      </el-form>
+
+      <template v-slot:footer>
+        <el-button :loading="updateLoading" type="primary" @click="submitUpdate">确定</el-button>
+        <el-button @click="hideUpdateDialog">取消</el-button>
       </template>
     </el-dialog>
   </article>
@@ -69,6 +88,16 @@ export default {
       addFormRules: {
         name: [{ required: true, message: '资源名不能为空', trigger: 'blur' }],
         description: [{ required: true, message: '资源描述不能为空', trigger: 'blur' }]
+      },
+
+      updateDialogVisible: false,
+      updateLoading: false,
+      updateForm: {
+        name: '',
+        description: ''
+      },
+      updateFormRules: {
+        description: [{ required: true, message: '资源描述不能为空', trigger: 'blur' }]
       }
     }
   },
@@ -85,7 +114,7 @@ export default {
   methods: {
     submitAdd() {
       this.$refs.addForm.validate().then(() => {
-        if (!this.$refs.upload.uploadFiles.length) {
+        if (!this.$refs.addUpload.uploadFiles.length) {
           this.$message.warning('请先选择要上传的资源文件')
           return
         }
@@ -93,7 +122,7 @@ export default {
         formData.append('type', this.selectType.name)
         formData.append('name', this.addForm.name)
         formData.append('description', this.addForm.description)
-        formData.append('file', this.$refs.upload.uploadFiles[0].raw)
+        formData.append('file', this.$refs.addUpload.uploadFiles[0].raw)
         this.addResource(formData)
       })
     },
@@ -108,7 +137,68 @@ export default {
         name: '',
         description: ''
       }
-      this.$refs.upload.uploadFiles = []
+      this.$refs.addUpload.uploadFiles = []
+    },
+
+    submitUpdate() {
+      this.$refs.updateForm.validate(() => {
+        if (!this.$refs.updateUpload.uploadFiles.length) {
+          this.$message.warning('请先选择要上传的资源文件')
+          return
+        }
+        const formData = new FormData()
+        formData.append('type', this.selectType.name)
+        formData.append('name', this.updateForm.name)
+        formData.append('description', this.updateForm.description)
+        formData.append('file', this.$refs.updateUpload.uploadFiles[0].raw)
+        this.updateResource(formData)
+      })
+    },
+    showUploadDialog(name) {
+      this.updateForm.name = name
+      this.updateDialogVisible = true
+    },
+    hideUpdateDialog() {
+      this.updateDialogVisible = false
+    },
+    resetUpdateForm() {
+      this.updateForm = {
+        name: '',
+        description: ''
+      }
+      this.$refs.updateUpload.uploadFiles = []
+    },
+
+    handleDelete(name) {
+      const h = this.$createElement
+      const _this = this
+      this.$prompt(
+        h('p', null, [
+          '请输入资源名称确定删除: ',
+          h('b', null, [name])
+        ]),
+        '警告',
+        { 
+          type: 'warning',
+          confirmButtonClass: 'el-button--danger',
+          inputValidator(val) {
+            if (val !== name) {
+              return '输入与资源名不一致'
+            }
+
+            return true
+          },
+          beforeClose(action, instance, done) {
+            console.log(action)
+            if (action === 'cancel') {
+              done()
+              return
+            }
+
+            _this.deleteResource(name).then(done)
+          }
+        }
+      )
     },
 
     downResource(name) {
@@ -134,6 +224,20 @@ export default {
         this.hideAddDialog()
         this.getResources()
       }).finally(() => (this.addLoading = false))
+    },
+    updateResource(formData) {
+      this.updateLoading = true
+      addResource(formData).then(() => {
+        this.$message.success('更新成功')
+        this.hideUpdateDialog()
+        this.getResources()
+      }).finally(() => (this.updateLoading = false))
+    },
+    deleteResource(name) {
+      return deleteResource(this.selectType.name, name).then(() => {
+        this.$message.success('删除成功')
+        this.getResources()
+      })
     }
   }
 }

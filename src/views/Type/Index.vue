@@ -1,6 +1,9 @@
 <template>
   <el-scrollbar class="height100">
     <article class="padding10">
+      <p>
+        <el-button type="primary" size="small" @click="showAddDialog">新增类型</el-button>
+      </p>
       <el-table v-loading="loading" :data="tableData">
         <el-table-column prop="name" label="类型名" align="center" />
         <el-table-column prop="description" label="类型描述" align="center" />
@@ -13,7 +16,14 @@
       </el-table>
 
       <el-dialog :visible.sync="addDialogVisible" title="新增类型" @close="resetForms">
-        <el-input v-model="addForm.name" placeholder="请输入新的类型名称" />
+        <el-form :model="addForm" :rules="addFormRules">
+          <el-form-item prop="name" label="类型名">
+            <el-input v-model="addForm.name" placeholder="请输入新的类型名称" />
+          </el-form-item>
+          <el-form-item prop="description" label="类型描述">
+            <el-input v-model="addForm.description" placeholder="请输入类型的描述信息" />
+          </el-form-item>
+        </el-form>
         <template v-slot:footer>
           <el-button :loading="addLoading" type="primary" @click="submitAdd">确定</el-button>
           <el-button @click="hideAddDialog">取消</el-button>
@@ -29,11 +39,11 @@
       </el-dialog>
 
       <el-dialog :visible.sync="deleteDialogVisible" title="删除类型">
-        <span>
+        <p>
           <span class="delete-warn">警告:</span> 
           删除类型是很危险的行为，会导致该类型下的所有资源文件全部被删除，如果确定需要删除，请在下方输入框输入当前类型的名称:
           <b>{{ wantToDeleteType ? wantToDeleteType.name : '' }}</b>
-        </span>
+        </p>
         <el-input v-model="inputWantToDeleteTypeName" placeholder="输入要删除的类型名称" />
         <template v-slot:footer>
           <el-button :loading="deleteLoading" type="danger" @click="submitDelete">确定</el-button>
@@ -61,8 +71,14 @@ export default {
         oldName: '',
         newName: ''
       },
+
       addForm: {
-        name: ''
+        name: '',
+        description: ''
+      },
+      addFormRules: {
+        name: [{ required: true, message: '类型名不能为空', trigger: 'blur' }],
+        description: [{ required: true, message: '类型描述不能为空', trigger: 'blur' }]
       },
       updateDialogVisible: false,
       addDialogVisible: false,
@@ -99,14 +115,14 @@ export default {
     },
 
     submitAdd() {
-      const { name } = this.addForm
+      const { name, description } = this.addForm
 
       if (!name) {
         this.$message.warning('请输入要添加的类型的名称')
         return
       }
 
-      this.addType(name)
+      this.addType(name, description)
     },
     showAddDialog() {
       this.addDialogVisible = true
@@ -144,26 +160,32 @@ export default {
       }
       this.addForm = { name: '' }
     },
+
     getAllTypes() {
       this.loading = true
       getAllTypes().then(types => {
         this.tableData = types
       }).finally(() => (this.loading = false))
     },
-    addType(name) {
+
+    addType(name, description) {
       this.addLoading = true
-      addType(name).then(() => {
+      addType(name, description).then(() => {
         this.getAllTypes()
         this.$message.success('添加成功')
+        this.hideAddDialog()
       }).finally(() => (this.addLoading = false))
     },
+
     updateTypeName(oldName, newName) {
       this.updateLoading = true
       updateType(oldName, newName).then(() => {
         this.getAllTypes()
+        this.hideUpdateDialog()
         this.$message.success('修改成功')
       }).finally(() => (this.updateLoading = false))
     },
+
     deleteType(name) {
       this.deleteLoading = true
       deleteType(name).then(() => {

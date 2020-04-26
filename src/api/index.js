@@ -1,5 +1,7 @@
 import { getRequest, postRequest, uploadRequest, downRequest } from './http'
 
+const username = localStorage.getItem('name')
+
 /* type requests */
 const TYPE_URLS = {
   list: '/type/list',
@@ -12,12 +14,12 @@ export const getAllTypes = () => {
   return getRequest(TYPE_URLS.list, {})
 }
 
-export const addType = name => {
-  return postRequest(TYPE_URLS.add, { name })
+export const addType = (name, description) => {
+  return postRequest(TYPE_URLS.add, { name, description, username })
 }
 
 export const updateType = (name, newName) => {
-  return postRequest(TYPE_URLS.update, { name, newName })
+  return postRequest(TYPE_URLS.update, { name, newName, username })
 }
 
 export const deleteType = name => {
@@ -31,7 +33,7 @@ const RESOURCE_URLS = {
   down: '/resource/down',
   changelog: '/resource/changelog',
   add: '/resource/add',
-  delete: '/resolurce/delete',
+  delete: '/resource/delete',
   update: '/resource/update'
 }
 
@@ -54,6 +56,7 @@ export const getResourceChangelog = (type, name) => {
 
 // 新增，更新版本都调用此接口
 export const addResource = formData => {
+  formData.append('username', username)
   return uploadRequest(RESOURCE_URLS.add, formData)
 }
 
@@ -63,5 +66,5 @@ export const deleteResource = (type, name) => {
 
 // 更新名字用
 export const updateResource = (type, name, newName) => {
-  return postRequest(RESOURCE_URLS.update, { type, name, newName })
+  return postRequest(RESOURCE_URLS.update, { type, name, newName, username })
 }
