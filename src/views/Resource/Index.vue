@@ -72,7 +72,7 @@
 <script>
 import ResourceLeftList from './ResourceLeftList.vue'
 import ResourceVersions from './ResourceVersions.vue'
-import { getAllResources, updateResource, addResource, deleteResource, downResource, getResourceVersion } from '../../api/index'
+import { getAllResources, addResource, deleteResource, downResource } from '../../api/index'
 
 export default {
   name: 'Resource',
@@ -202,7 +202,6 @@ export default {
             return true
           },
           beforeClose(action, instance, done) {
-            console.log(action)
             if (action === 'cancel') {
               done()
               return
