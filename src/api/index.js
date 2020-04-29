@@ -31,7 +31,6 @@ const RESOURCE_URLS = {
   list: '/resource/list',
   versions: '/resource/versions',
   down: '/resource/down',
-  changelog: '/resource/changelog',
   add: '/resource/add',
   delete: '/resource/delete',
   update: '/resource/update'
@@ -48,10 +47,6 @@ export const getResourceVersion = (type, name) => {
 export const downResource = (type, name, version) => {
   // version 可选
   return downRequest(RESOURCE_URLS.down, { type, name, version })
-}
-
-export const getResourceChangelog = (type, name) => {
-  return getRequest(RESOURCE_URLS.changelog, { type, name })
 }
 
 // 新增，更新版本都调用此接口

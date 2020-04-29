@@ -15,7 +15,7 @@
           <template v-slot="{ row }">
             <el-button type="text" size="mini" @click="downResource(row.name)">下载</el-button>
             <el-button type="text" size="mini" @click="showUploadDialog(row.name)">更新</el-button>
-            <el-button type="text" size="mini">查看版本</el-button>
+            <el-button type="text" size="mini" @click="handleViewVersion(row.name)">查看版本</el-button>
             <el-button type="text" size="mini" @click="handleDelete(row.name)">删除</el-button>
           </template>
         </el-table-column>
@@ -62,16 +62,21 @@
         <el-button @click="hideUpdateDialog">取消</el-button>
       </template>
     </el-dialog>
+
+    <el-dialog :visible.sync="versionDialogVisible" title="查看版本">
+      <resource-versions :type="selectTypeName" :name="wantToViewVersionResourceName" />
+    </el-dialog>
   </article>
 </template>
 
 <script>
 import ResourceLeftList from './ResourceLeftList.vue'
+import ResourceVersions from './ResourceVersions.vue'
 import { getAllResources, updateResource, addResource, deleteResource, downResource, getResourceVersion } from '../../api/index'
 
 export default {
   name: 'Resource',
-  components: { ResourceLeftList },
+  components: { ResourceLeftList, ResourceVersions },
   data() {
     return {
       selectType: null,
@@ -98,7 +103,15 @@ export default {
       },
       updateFormRules: {
         description: [{ required: true, message: '资源描述不能为空', trigger: 'blur' }]
-      }
+      },
+
+      versionDialogVisible: false,
+      wantToViewVersionResourceName: ''
+    }
+  },
+  computed: {
+    selectTypeName() {
+      return this.selectType ? this.selectType.name : ''
     }
   },
   watch: {
@@ -199,6 +212,11 @@ export default {
           }
         }
       )
+    },
+
+    handleViewVersion(name) {
+      this.wantToViewVersionResourceName = name
+      this.versionDialogVisible = true
     },
 
     downResource(name) {
