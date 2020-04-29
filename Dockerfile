@@ -10,4 +10,4 @@ RUN npm config set registry http://registry.npm.taobao.org && npm ci
 
 RUN npm run build
 
-RUN mv dist/* /usr/share/nginx/
+RUN cp -r dist/* /usr/share/nginx/html/
